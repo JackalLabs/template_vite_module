@@ -2,7 +2,6 @@ import { defineConfig } from "vite"
 
 import typescript from "@rollup/plugin-typescript"
 import { resolve } from "path"
-import { copyFileSync } from "fs"
 import { typescriptPaths } from "rollup-plugin-typescript-paths"
 import tsconfigPaths from 'vite-tsconfig-paths'
 import dts from 'vite-plugin-dts'
@@ -12,9 +11,6 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     dts({
-      afterBuild: () => {
-        copyFileSync("dist/index.d.ts", "dist/index.d.mts")
-      },
       include: ["src"],
       rollupTypes: true,
       logLevel: 'error'
@@ -41,6 +37,26 @@ export default defineConfig({
       name: 'SAMPLE'
     },
     rollupOptions: {
+      input: resolve(__dirname, "src/index.ts"),
+      preserveEntrySignatures: 'allow-extension',
+      output: [
+        {
+          dir: './dist',
+          entryFileNames: 'index.cjs.js',
+          format: 'cjs',
+          name: 'SAMPLE',
+          plugins: []
+        },
+        {
+          dir: './dist',
+          entryFileNames: 'index.esm.js',
+          format: 'esm',
+          name: 'SAMPLE',
+          plugins: [
+            nodePolyfills({ include: ['buffer', 'util'] })
+          ]
+        }
+      ],
       external: [],
       plugins: [
         typescriptPaths({
